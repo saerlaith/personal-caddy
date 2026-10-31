@@ -15,7 +15,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # The Dockerfile is the source of truth for the Caddy version, because that is
       # what Dependabot bumps. Deriving the tags from it keeps the two in step: a
