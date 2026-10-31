@@ -5,8 +5,3 @@
 module github.com/saerlaith/personal-caddy
 
 go 1.24
-
-require (
-	github.com/caddy-dns/cloudflare v0.2.1
-	github.com/mholt/caddy-dynamicdns v0.0.0-20251020155855-d8f490a28db6
-)
