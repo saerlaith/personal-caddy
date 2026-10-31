@@ -15,17 +15,36 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4      
+      - uses: actions/checkout@v4
+
+      # The Dockerfile is the source of truth for the Caddy version, because that is
+      # what Dependabot bumps. Deriving the tags from it keeps the two in step: a
+      # Dependabot PR changing `FROM caddy:2.10.3-alpine` also republishes 2.10.3 and
+      # moves 2, rather than tagging a 2.10.3 build as 2.10.2.
+      - name: Read the Caddy version from the Dockerfile
+        id: caddy
+        run: |
+          set -euo pipefail
+          version="$(sed -n 's/^FROM caddy:\([0-9][0-9.]*\)[.-].*/\1/p' Dockerfile | head -n 1)"
+          if [ -z "$version" ]; then
+            echo "::error::No Caddy version found in the Dockerfile - expected a line like 'FROM caddy:<version>-alpine'"
+            exit 1
+          fi
+          major="${version%%.*}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "major=$major" >> "$GITHUB_OUTPUT"
+          echo "Caddy $version -> $version, $version-alpine, $major, $major-alpine, latest"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GHCR_TOKEN }}
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
@@ -33,5 +52,9 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
+            ghcr.io/saerlaith/personal-caddy:${{ steps.caddy.outputs.version }}
+            ghcr.io/saerlaith/personal-caddy:${{ steps.caddy.outputs.version }}-alpine
+            ghcr.io/saerlaith/personal-caddy:${{ steps.caddy.outputs.major }}
+            ghcr.io/saerlaith/personal-caddy:${{ steps.caddy.outputs.major }}-alpine
             ghcr.io/saerlaith/personal-caddy:latest
             ghcr.io/saerlaith/personal-caddy:${{ github.sha }}
