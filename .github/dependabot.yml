@@ -1,0 +1,23 @@
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  # The Caddy base image. Both stages are pinned to a concrete version so there is
+  # an exact version for this to increment - a floating `2-alpine` tag gives it
+  # nothing to compare against and produces no pull requests.
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 5
+
+  # actions/checkout, docker/setup-buildx-action, docker/login-action,
+  # docker/build-push-action in .github/workflows/deploy.yml
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 5
