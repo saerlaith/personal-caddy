@@ -6,6 +6,11 @@ on:
     - cron: "0 0 * * 3"
   push:
     branches: [main]
+  # Build on pull requests as well, without publishing. Nothing ran on a PR before,
+  # which is how PR #4 merged green while emptying go.mod: the requirements were
+  # pruned, main stopped publishing, and no check ever said so.
+  pull_request:
+    branches: [main]
 
 concurrency:
   group: deploy-${{ github.ref }}
@@ -38,7 +43,10 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
+      # Skipped on pull requests: a PR has no image to publish, and a Dependabot
+      # branch is not where the registry token should be exercised.
       - name: Login to GitHub Container Registry
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
@@ -50,7 +58,7 @@ jobs:
         with:
           context: .
           platforms: linux/amd64
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ghcr.io/saerlaith/personal-caddy:${{ steps.caddy.outputs.version }}
             ghcr.io/saerlaith/personal-caddy:${{ steps.caddy.outputs.version }}-alpine
