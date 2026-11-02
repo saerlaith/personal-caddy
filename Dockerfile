@@ -1,4 +1,4 @@
-FROM caddy:2.11.6-builder-alpine AS builder
+FROM caddy:2.11.7-builder-alpine AS builder
 
 # The two xcaddy plugin versions live in go.mod, which Dependabot reads. Copying it
 # in and resolving each version with `go list` makes go.mod the single source of
@@ -26,7 +26,7 @@ RUN set -eu; \
         --with github.com/caddy-dns/cloudflare@${cloudflare} \
         --with github.com/mholt/caddy-dynamicdns@${dynamicdns}
 
-FROM caddy:2.11.6-alpine
+FROM caddy:2.11.7-alpine
 
 RUN apk add curl
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy
